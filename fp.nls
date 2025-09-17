@@ -1,0 +1,133 @@
+export [fp [
+  take drop fold scan compose pipe find-indices find concat flatten zip
+  zip-with unzip iterate iterate-last
+]]
+
+; TODO: apply
+
+to-report take [number lst]
+  ifelse number = 0 [
+    report []
+  ] [
+    report fput (first lst) take (number - 1) (butfirst lst)
+  ]
+end
+
+to-report drop [number lst]
+  ifelse number = 0 [
+    report lst
+  ] [
+    report drop (number - 1) (butfirst lst)
+  ]
+end
+
+to-report fold [reporter init lst]
+  ifelse empty? lst [
+    report init
+  ] [
+    let current (runresult reporter init (first lst))
+    report fold reporter current (butfirst lst)
+  ]
+end
+
+to-report scan [reporter lst]
+  let n-lst length lst
+
+  ifelse n-lst = 0 [
+    ; Returning an empty list might be appropriate here, but the fp extension
+    ; produces an error in this situation, so raising an error better aligns
+    ; with the old behavior.
+    error "scan: Input list can't be empty"
+  ] [
+    let proc [[p x] -> lput (runresult reporter (last p) x) p]
+    report fold proc (take 1 lst) (butfirst lst)
+  ]
+end
+
+to-report compose [reporter1 reporter2]
+  report [x -> (runresult reporter1 (runresult reporter2 x))]
+end
+
+to-report pipe [reporter1 reporter2]
+  report compose reporter2 reporter1
+end
+
+; TODO: curry
+
+to-report find-indices-internal [reporter index accum lst]
+  ifelse (empty? lst) [
+    report accum
+  ] [
+    ifelse (runresult reporter (first lst)) [
+      report find-indices-internal reporter (index + 1) (lput index accum) (butfirst lst)
+    ] [
+      report find-indices-internal reporter (index + 1) accum (butfirst lst)
+    ]
+  ]
+end
+
+to-report find-indices [reporter lst]
+  report find-indices-internal reporter 0 [] lst
+end
+
+to-report find [reporter lst]
+  (ifelse (empty? lst) [
+    report false
+  ] (runresult reporter (first lst)) [
+    report first lst
+  ] [
+    report find reporter (butfirst lst)
+  ])
+end
+
+to-report concat [lst]
+  report fold [[p x] -> sentence p x] [] lst
+end
+
+to-report flatten [lst]
+  ifelse (is-list? lst) [
+    report concat (map flatten lst)
+  ] [
+    report lst
+  ]
+end
+
+to-report zip-with [proc lst1 lst2]
+  ifelse (empty? lst1 or empty? lst2) [
+    report []
+  ] [
+    let head (runresult proc (first lst1) (first lst2))
+    report fput head zip-with proc (butfirst lst1) (butfirst lst2)
+  ]
+end
+
+to-report zip [lst1 lst2]
+  report zip-with [[x y] -> (list x y)] lst1 lst2
+end
+
+to-report unzip-internal [accum lst]
+  ifelse (empty? lst) [
+    report accum
+  ] [
+    let new-accum lput (map [[x] -> first x] lst) accum
+    report unzip-internal new-accum (filter [[x] -> not empty? x] (map butfirst lst))
+  ]
+end
+
+to-report unzip [lst]
+  report unzip-internal [] lst
+end
+
+to-report iterate-last [reporter initial-value repetitions]
+  ifelse repetitions > 0 [
+    let result (runresult reporter initial-value)
+    report iterate-last reporter result (repetitions - 1)
+  ] [
+    report initial-value
+  ]
+end
+
+to-report iterate [reporter initial-value repetitions]
+  let new-reporter [[x] -> lput (runresult reporter (last x)) x]
+  report iterate-last new-reporter (list initial-value) repetitions
+end
