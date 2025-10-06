@@ -1,4 +1,4 @@
-import [fp fp]
+import [fp]
 
 export [test [run-tests]]
 
