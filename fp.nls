@@ -3,7 +3,15 @@ export [fp [
   zip-with unzip iterate iterate-last
 ]]
 
-; TODO: apply
+to-report apply [proc args]
+  let args-string butlast butfirst word "" args
+
+  ifelse is-string? proc [
+    report runresult (word proc " " args-string)
+  ] [
+    report runresult (word "(runresult proc " args-string " )")
+  ]
+end
 
 to-report take [number lst]
   ifelse number = 0 [
