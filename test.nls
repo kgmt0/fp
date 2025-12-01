@@ -1,6 +1,6 @@
-import [fp]
+import :fp
 
-export [test [run-tests]]
+export [run-tests]
 
 to test [name thunk expected]
   let result runresult thunk

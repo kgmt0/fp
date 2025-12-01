@@ -1,7 +1,7 @@
-export [fp [
+export [
   apply take drop fold scan compose pipe find-indices find concat flatten zip
   zip-with unzip iterate iterate-last
-]]
+]
 
 to-report apply [proc args]
   let args-string butlast butfirst word "" args
