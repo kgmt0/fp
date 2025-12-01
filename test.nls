@@ -20,7 +20,7 @@ to run-tests
 
   test  "Take the first 2 elements in the list [\"a\" \"b\" \"c\"]"
         [[] -> fp:take 2 ["a" "b" "c"]]
-        [0 1 2 3 4]
+        ["a" "b"]
 
   test  "Take the first 5 elements in the list [0 1 ... 9]"
         [[] -> fp:take 5 (range 10)]
